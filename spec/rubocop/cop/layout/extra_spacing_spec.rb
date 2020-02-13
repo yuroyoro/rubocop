@@ -215,13 +215,19 @@ RSpec.describe RuboCop::Cop::Layout::ExtraSpacing, :config do
     RUBY
 
     'aligning long assignment expressions that include line breaks' =>
-    <<~RUBY
+    <<~RUBY,
       size_attribute_name    = FactoryGirl.create(:attribute,
                                                   name:   'Size',
                                                   values: %w{small large})
       carrier_attribute_name = FactoryGirl.create(:attribute,
                                                   name:   'Carrier',
                                                   values: %w{verizon})
+    RUBY
+
+    'including east asian width chars in comment line' =>
+    <<~RUBY
+      hash["キー"] = 100 # hash key is east asian width chars
+      hash[key]    = 2   # this key is ascii
     RUBY
   }.freeze
 

@@ -143,7 +143,9 @@ module RuboCop
         end
 
         def comment_column(index)
-          processed_source.comments[index].loc.column
+          loc = processed_source.comments[index].loc
+          line = processed_source.lines[loc.line - 1]
+          Unicode::DisplayWidth.of(line[0, loc.column], 1)
         end
 
         def force_equal_sign_alignment?
