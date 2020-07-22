@@ -649,6 +649,15 @@ RSpec.describe RuboCop::Cop::Layout::HashAlignment, :config do
       RUBY
     end
 
+    it 'accept a key that include east asian width charactors' do
+      expect_no_offenses(<<~RUBY)
+        hash = {
+          "キー" => 0,
+          "key"  => 1
+        }
+      RUBY
+    end
+
     it 'registers an offense for misaligned hash values' do
       expect_offense(<<~RUBY)
         hash1 = {

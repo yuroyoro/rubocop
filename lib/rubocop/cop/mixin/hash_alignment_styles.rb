@@ -64,6 +64,9 @@ module RuboCop
                                             key_delta)
           value_delta = value_delta(first_pair, current_pair) -
                         key_delta - separator_delta
+          value_delta = value_delta(first_pair, current_pair) -
+                        key_delta - separator_delta
+
 
           { key: key_delta, separator: separator_delta, value: value_delta }
         end
@@ -88,7 +91,7 @@ module RuboCop
         end
 
         def deltas_for_first_pair(first_pair, node)
-          self.max_key_width = node.keys.map { |key| key.source.length }.max
+          self.max_key_width = node.keys.map { |key| display_width(key.value.inspect) }.max
 
           separator_delta = separator_delta(first_pair, first_pair, 0)
           {
@@ -106,8 +109,12 @@ module RuboCop
         end
 
         def hash_rocket_delta(first_pair, current_pair)
-          first_pair.loc.column + max_key_width + 1 -
-            current_pair.loc.operator.column
+          hash_rocket_operator_column(first_pair) -
+            hash_rocket_operator_column(current_pair)
+        end
+
+        def hash_rocket_operator_column(pair)
+          pair.loc.operator.column + display_width(pair.key.value) - key_length(pair)
         end
 
         def value_delta(first_pair, current_pair)
@@ -116,7 +123,24 @@ module RuboCop
           correct_value_column = first_pair.key.loc.column +
                                  current_pair.delimiter(true).length +
                                  max_key_width
-          correct_value_column - current_pair.value.loc.column
+
+          correct_value_column - value_column(current_pair)
+        end
+
+        def value_column(pair)
+          pair_key_width = display_width(pair.key.value)
+          pair.value.loc.column + pair_key_width - key_length(pair)
+        end
+
+        def key_length(pair)
+          value = pair.key.value
+          value = value.inspect if pair.hash_rocket? && value.is_a?(Symbol)
+          value.length
+        end
+
+        def display_width(value)
+          value = value.inspect if value.is_a? Symbol
+          Unicode::DisplayWidth.of(value, 1)
         end
       end
 
